@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFlow Business Plan Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.5.0/dist/Recharts.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; }
+        @media print { .no-print { display: none !important; } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+        const { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } = Recharts;
+
+        const BusinessPlanDashboard = () => {
+            const [activeTab, setActiveTab] = useState('executive');
+            const [viewMode, setViewMode] = useState('monthly');
+            const [copiedTable, setCopiedTable] = useState(null);
+
+            const rawData = `=== UMSATZPLANUNG (Monatlich, 3 Jahre) ===
+Monat,Jahr,Neukunden,Churn_Rate,MRR,ARR,Umsatz_Einmalig
+2025-01,1,15,0.05,7500,90000,5000
+2025-02,1,18,0.05,9000,108000,6000
+2025-03,1,22,0.04,11000,132000,8000
+2025-04,1,25,0.04,12500,150000,10000
+2025-05,1,30,0.04,15000,180000,12000
+2025-06,1,35,0.03,17500,210000,15000
+2025-07,1,40,0.03,20000,240000,18000
+2025-08,1,45,0.03,22500,270000,20000
+2025-09,1,50,0.03,25000,300000,22000
+2025-10,1,55,0.02,27500,330000,25000
+2025-11,1,60,0.02,30000,360000,28000
+2025-12,1,65,0.02,32500,390000,30000
+2026-01,2,70,0.02,35000,420000,32000
+2026-02,2,75,0.02,37500,450000,35000
+2026-03,2,80,0.02,40000,480000,38000
+2026-04,2,85,0.02,42500,510000,40000
+2026-05,2,90,0.02,45000,540000,42000
+2026-06,2,95,0.02,47500,570000,45000
+2026-07,2,100,0.02,50000,600000,48000
+2026-08,2,105,0.02,52500,630000,50000
+2026-09,2,110,0.02,55000,660000,52000
+2026-10,2,115,0.02,57500,690000,55000
+2026-11,2,120,0.02,60000,720000,58000
+2026-12,2,125,0.02,62500,750000,60000
+2027-01,3,130,0.02,65000,780000,62000
+2027-02,3,135,0.02,67500,810000,65000
+2027-03,3,140,0.02,70000,840000,68000
+2027-04,3,145,0.02,72500,870000,70000
+2027-05,3,150,0.02,75000,900000,72000
+2027-06,3,155,0.02,77500,930000,75000
+2027-07,3,160,0.02,80000,960000,78000
+2027-08,3,165,0.02,82500,990000,80000
+2027-09,3,170,0.02,85000,1020000,82000
+2027-10,3,175,0.02,87500,1050000,85000
+2027-11,3,180,0.02,90000,1080000,88000
+2027-12,3,185,0.02,92500,1110000,90000
+
+=== KOSTENSTRUKTUR (Monatlich, 3 Jahre) ===
+Monat,Jahr,Gehälter,Marketing,Server_Cloud,Büro_Miete,Software_Lizenzen,Reisekosten,Sonstige_Kosten
+2025-01,1,45000,8000,2000,3000,1500,1000,2000
+2025-02,1,45000,9000,2200,3000,1500,1200,2200
+2025-03,1,48000,10000,2400,3000,1600,1400,2400
+2025-04,1,48000,11000,2600,3000,1600,1500,2600
+2025-05,1,52000,12000,2800,3500,1700,1600,2800
+2025-06,1,52000,13000,3000,3500,1700,1800,3000
+2025-07,1,56000,14000,3200,3500,1800,2000,3200
+2025-08,1,56000,15000,3400,3500,1800,2200,3400
+2025-09,1,60000,16000,3600,4000,1900,2400,3600
+2025-10,1,60000,17000,3800,4000,1900,2600,3800
+2025-11,1,65000,18000,4000,4000,2000,2800,4000
+2025-12,1,65000,19000,4200,4000,2000,3000,4200
+2026-01,2,70000,20000,4400,4500,2100,3200,4400
+2026-02,2,70000,21000,4600,4500,2100,3400,4600
+2026-03,2,75000,22000,4800,4500,2200,3600,4800
+2026-04,2,75000,23000,5000,4500,2200,3800,5000
+2026-05,2,80000,24000,5200,5000,2300,4000,5200
+2026-06,2,80000,25000,5400,5000,2300,4200,5400
+2026-07,2,85000,26000,5600,5000,2400,4400,5600
+2026-08,2,85000,27000,5800,5000,2400,4600,5800
+2026-09,2,90000,28000,6000,5500,2500,4800,6000
+2026-10,2,90000,29000,6200,5500,2500,5000,6200
+2026-11,2,95000,30000,6400,5500,2600,5200,6400
+2026-12,2,95000,31000,6600,5500,2600,5400,6600
+2027-01,3,100000,32000,6800,6000,2700,5600,6800
+2027-02,3,100000,33000,7000,6000,2700,5800,7000
+2027-03,3,105000,34000,7200,6000,2800,6000,7200
+2027-04,3,105000,35000,7400,6000,2800,6200,7400
+2027-05,3,110000,36000,7600,6500,2900,6400,7600
+2027-06,3,110000,37000,7800,6500,2900,6600,7800
+2027-07,3,115000,38000,8000,6500,3000,6800,8000
+2027-08,3,115000,39000,8200,6500,3000,7000,8200
+2027-09,3,120000,40000,8400,7000,3100,7200,8400
+2027-10,3,120000,41000,8600,7000,3100,7400,8600
+2027-11,3,125000,42000,8800,7000,3200,7600,8800
+2027-12,3,125000,43000,9000,7000,3200,7800,9000
+
+=== INVESTITIONSPLANUNG ===
+Kategorie,Jahr_1,Jahr_2,Jahr_3,Gesamt
+Hardware,25000,15000,10000,50000
+Software_Entwicklung,80000,60000,40000,180000
+Marketing_Kampagnen,50000,70000,90000,210000
+Büroausstattung,30000,10000,5000,45000
+Rechtsberatung,15000,10000,8000,33000
+Schulungen,12000,15000,18000,45000
+
+=== PERSONALPLANUNG ===
+Position,Anzahl_Jahr1,Anzahl_Jahr2,Anzahl_Jahr3,Gehalt_Monat,Gehalt_Jahr
+Geschäftsführer,1,1,1,8000,96000
+CTO,1,1,1,7000,84000
+Entwickler,3,5,7,5000,60000
+Sales_Manager,1,2,3,4500,54000
+Marketing_Manager,1,1,2,4500,54000
+Customer_Success,2,3,4,3500,42000
+Verwaltung,1,1,2,3000,36000
+
+=== FINANZIERUNG ===
+Quelle,Betrag,Zeitpunkt,Typ
+Eigenkapital,50000,2025-01,Equity
+Business_Angel,150000,2025-03,Equity
+Seed_Runde,500000,2025-09,Equity
+Bank_Kredit,100000,2026-06,Debt
+Series_A,1000000,2027-03,Equity
+
+=== MARKTDATEN ===
+Kennzahl,Wert,Einheit
+TAM,5000000000,EUR
+SAM,500000000,EUR
+SOM,50000000,EUR
+CAC,450,EUR
+LTV,2700,EUR
+LTV_CAC_Ratio,6.0,Faktor
+Marktanteil_Jahr3,0.0222,Prozent`;
+
+            const parseRevenueData = () => {
+                const lines = rawData.split('\n');
+                const startIdx = lines.findIndex(l => l.includes('UMSATZPLANUNG')) + 2;
+                const endIdx = lines.findIndex((l, i) => i > startIdx && l.includes('==='));
+                return lines.slice(startIdx, endIdx).filter(l => l.trim()).map(line => {
+                    const [monat, jahr, neukunden, churn, mrr, arr, einmalig] = line.split(',');
+                    return {
+                        monat, jahr: parseInt(jahr), neukunden: parseInt(neukunden),
+                        churnRate: parseFloat(churn), mrr: parseInt(mrr), arr: parseInt(arr),
+                        umsatzEinmalig: parseInt(einmalig), totalRevenue: parseInt(mrr) + parseInt(einmalig)
+                    };
+                });
+            };
+
+            const parseCostData = () => {
+                const lines = rawData.split('\n');
+                const startIdx = lines.findIndex(l => l.includes('KOSTENSTRUKTUR')) + 2;
+                const endIdx = lines.findIndex((l, i) => i > startIdx && l.includes('==='));
+                return lines.slice(startIdx, endIdx).filter(l => l.trim()).map(line => {
+                    const [monat, jahr, gehalter, marketing, server, miete, software, reise, sonstige] = line.split(',');
+                    const totalCosts = [gehalter, marketing, server, miete, software, reise, sonstige].reduce((s, v) => s + parseInt(v), 0);
+                    return { monat, jahr: parseInt(jahr), gehalter: parseInt(gehalter), marketing: parseInt(marketing),
+                        serverCloud: parseInt(server), buroMiete: parseInt(miete), softwareLizenzen: parseInt(software),
+                        reisekosten: parseInt(reise), sonstigeKosten: parseInt(sonstige), totalCosts };
+                });
+            };
+
+            const parseInvestmentData = () => {
+                const lines = rawData.split('\n');
+                const startIdx = lines.findIndex(l => l.includes('INVESTITIONSPLANUNG')) + 2;
+                const endIdx = lines.findIndex((l, i) => i > startIdx && l.includes('==='));
+                return lines.slice(startIdx, endIdx).filter(l => l.trim()).map(line => {
+                    const [kategorie, jahr1, jahr2, jahr3, gesamt] = line.split(',');
+                    return { kategorie, jahr1: parseInt(jahr1), jahr2: parseInt(jahr2), jahr3: parseInt(jahr3), gesamt: parseInt(gesamt) };
+                });
+            };
+
+            const parseFundingData = () => {
+                const lines = rawData.split('\n');
+                const startIdx = lines.findIndex(l => l.includes('FINANZIERUNG')) + 2;
+                const endIdx = lines.findIndex((l, i) => i > startIdx && l.includes('==='));
+                return lines.slice(startIdx, endIdx).filter(l => l.trim()).map(line => {
+                    const [quelle, betrag, zeitpunkt, typ] = line.split(',');
+                    return { quelle, betrag: parseInt(betrag), zeitpunkt, typ };
+                });
+            };
+
+            const parseMarketData = () => {
+                const lines = rawData.split('\n');
+                const startIdx = lines.findIndex(l => l.includes('MARKTDATEN')) + 2;
+                const data = {};
+                lines.slice(startIdx).filter(l => l.trim() && !l.includes('===')).forEach(line => {
+                    const [key, value] = line.split(',');
+                    data[key] = parseFloat(value);
+                });
+                return data;
+            };
+
+            const revenueData = useMemo(() => parseRevenueData(), []);
+            const costData = useMemo(() => parseCostData(), []);
+            const investmentData = useMemo(() => parseInvestmentData(), []);
+            const fundingData = useMemo(() => parseFundingData(), []);
+            const marketData = useMemo(() => parseMarketData(), []);
+
+            const financialMetrics = useMemo(() => {
+                let cumulativeCash = 0, cumulativeRevenue = 0, cumulativeCosts = 0;
+                let breakEvenMonth = null, monthsNegativeCashFlow = 0;
+                
+                const monthlyData = revenueData.map((rev, idx) => {
+                    const cost = costData[idx];
+                    const revenue = rev.totalRevenue;
+                    const costs = cost.totalCosts;
+                    const netIncome = revenue - costs;
+                    const funding = fundingData.find(f => f.zeitpunkt === rev.monat);
+                    const fundingAmount = funding ? funding.betrag : 0;
+                    const investments = investmentData.reduce((sum, inv) => sum + inv[`jahr${rev.jahr}`] / 12, 0);
+                    const operatingCashFlow = netIncome;
+                    const investingCashFlow = -investments;
+                    const financingCashFlow = fundingAmount;
+                    const netCashFlow = operatingCashFlow + investingCashFlow + financingCashFlow;
+                    
+                    cumulativeCash += netCashFlow;
+                    cumulativeRevenue += revenue;
+                    cumulativeCosts += costs;
+                    
+                    if (!breakEvenMonth && cumulativeCash > 0) breakEvenMonth = rev.monat;
+                    if (netCashFlow < 0) monthsNegativeCashFlow++; else monthsNegativeCashFlow = 0;
+                    
+                    return {
+                        monat: rev.monat, jahr: rev.jahr, revenue, costs, netIncome,
+                        margin: revenue > 0 ? (netIncome / revenue * 100) : 0,
+                        operatingCashFlow, investingCashFlow, financingCashFlow, netCashFlow,
+                        cumulativeCash, cumulativeRevenue, cumulativeCosts,
+                        mrr: rev.mrr, arr: rev.arr, neukunden: rev.neukunden, churnRate: rev.churnRate,
+                        runway: cumulativeCash > 0 ? Math.floor(cumulativeCash / (costs || 1)) : 0
+                    };
+                });
+                
+                const yearlyData = [1, 2, 3].map(year => {
+                    const yearData = monthlyData.filter(m => m.jahr === year);
+                    const totalRevenue = yearData.reduce((sum, m) => sum + m.revenue, 0);
+                    const totalCosts = yearData.reduce((sum, m) => sum + m.costs, 0);
+                    return {
+                        jahr: year, revenue: totalRevenue, costs: totalCosts,
+                        netIncome: totalRevenue - totalCosts,
+                        margin: ((totalRevenue - totalCosts) / totalRevenue * 100).toFixed(2),
+                        customers: yearData[yearData.length - 1].neukunden,
+                        arr: yearData[yearData.length - 1].arr
+                    };
+                });
+                
+                const finalMonth = monthlyData[monthlyData.length - 1];
+                const cagr = Math.pow(yearlyData[2].revenue / yearlyData[0].revenue, 1/2) - 1;
+                const totalFunding = fundingData.reduce((sum, f) => sum + f.betrag, 0);
+                const totalInvestments = investmentData.reduce((sum, inv) => sum + inv.gesamt, 0);
+                const negativeCashFlowMonths = monthlyData.filter(m => m.netCashFlow < 0);
+                const avgBurnRate = negativeCashFlowMonths.length > 0 
+                    ? negativeCashFlowMonths.reduce((sum, m) => sum + Math.abs(m.netCashFlow), 0) / negativeCashFlowMonths.length : 0;
+                
+                return {
+                    monthlyData, yearlyData, breakEvenMonth, avgBurnRate, totalFunding, totalInvestments,
+                    finalCash: finalMonth.cumulativeCash, finalRunway: finalMonth.runway,
+                    cagr: (cagr * 100).toFixed(2), totalRevenue: cumulativeRevenue,
+                    totalCosts: cumulativeCosts, totalNetIncome: cumulativeRevenue - cumulativeCosts,
+                    criticalCashFlowPeriods: monthsNegativeCashFlow > 3
+                };
+            }, [revenueData, costData, investmentData, fundingData]);
+
+            const unitEconomics = useMemo(() => {
+                const cac = marketData.CAC || 450;
+                const ltv = marketData.LTV || 2700;
+                const paybackPeriod = cac / (financialMetrics.yearlyData[0].arr / financialMetrics.yearlyData[0].customers / 12);
+                return { cac, ltv, ltvCacRatio: (ltv / cac).toFixed(2), paybackPeriod: paybackPeriod.toFixed(1) };
+            }, [marketData, financialMetrics]);
+
+            const formatCurrency = (value) => new Intl.NumberFormat('de-DE', {
+                style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0
+            }).format(value);
+
+            const KPICard = ({ title, value, subtitle, color = 'blue' }) => (
+                <div className={`bg-white rounded-lg shadow-md p-6 border-l-4 border-${color}-500`}>
+                    <p className="text-sm font-medium text-gray-600">{title}</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">{value}</p>
+                    {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-8 text-white mb-6">
+                            <h1 className="text-4xl font-bold mb-4">TechFlow Business Plan Dashboard</h1>
+                            <p className="text-xl mb-2">3-Jahres-Finanzplanung 2025-2027</p>
+                            <p className="text-blue-100">Umfassende Analyse mit Break-Even, Cash Flow und Unit Economics</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                            <KPICard
+                                title="Gesamtumsatz (3 Jahre)"
+                                value={formatCurrency(financialMetrics.totalRevenue)}
+                                subtitle={`CAGR: ${financialMetrics.cagr}%`}
+                                color="green"
+                            />
+                            <KPICard
+                                title="Break-Even Monat"
+                                value={financialMetrics.breakEvenMonth || 'Nicht erreicht'}
+                                subtitle="Profitabilität erreicht"
+                                color="green"
+                            />
+                            <KPICard
+                                title="Finale Cash Position"
+                                value={formatCurrency(financialMetrics.finalCash)}
+                                subtitle={`Runway: ${financialMetrics.finalRunway} Monate`}
+                                color="blue"
+                            />
+                            <KPICard
+                                title="LTV:CAC Ratio"
+                                value={unitEconomics.ltvCacRatio}
+                                subtitle={`Payback: ${unitEconomics.paybackPeriod} Monate`}
+                                color="green"
+                            />
+                        </div>
+
+                        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                            <h3 className="text-lg font-semibold mb-4">Umsatz vs. Kosten Entwicklung (36 Monate)</h3>
+                            <ResponsiveContainer width="100%" height={400}>
+                                <AreaChart data={financialMetrics.monthlyData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="monat" angle={-45} textAnchor="end" height={80} />
+                                    <YAxis tickFormatter={(val) => `${(val / 1000).toFixed(0)}k`} />
+                                    <Tooltip formatter={(value) => formatCurrency(value)} />
+                                    <Legend />
+                                    <Area type="monotone" dataKey="revenue" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.6} name="Umsatz" />
+                                    <Area type="monotone" dataKey="costs" stackId="2" stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} name="Kosten" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                            <h3 className="text-lg font-semibold mb-4">Cash Flow Entwicklung</h3>
+                            <ResponsiveContainer width="100%" height={400}>
+                                <LineChart data={financialMetrics.monthlyData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="monat" angle={-45} textAnchor="end" height={80} />
+                                    <YAxis tickFormatter={(val) => `${(val / 1000).toFixed(0)}k`} />
+                                    <Tooltip formatter={(value) => formatCurrency(value)} />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="netCashFlow" stroke="#3b82f6" name="Netto Cash Flow" />
+                                    <Line type="monotone" dataKey="cumulativeCash" stroke="#10b981" strokeWidth={2} name="Kumulativer Cash" />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div className="bg-white rounded-lg shadow-md p-6">
+                                <h4 className="font-semibold text-gray-700 mb-4">Jahresvergleich Umsatz</h4>
+                                {financialMetrics.yearlyData.map(y => (
+                                    <div key={y.jahr} className="flex justify-between mb-3">
+                                        <span className="text-gray-600">Jahr {y.jahr}:</span>
+                                        <span className="font-bold text-green-600">{formatCurrency(y.revenue)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="bg-white rounded-lg shadow-md p-6">
+                                <h4 className="font-semibold text-gray-700 mb-4">Finanzierung</h4>
+                                {fundingData.map((f, i) => (
+                                    <div key={i} className="flex justify-between mb-3">
+                                        <span className="text-gray-600 text-sm">{f.quelle}</span>
+                                        <span className="font-semibold text-blue-600">{formatCurrency(f.betrag)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="bg-white rounded-lg shadow-md p-6">
+                                <h4 className="font-semibold text-gray-700 mb-4">Marktpotenzial</h4>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600 text-sm">TAM:</span>
+                                        <span className="font-semibold">{formatCurrency(marketData.TAM)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600 text-sm">SAM:</span>
+                                        <span className="font-semibold">{formatCurrency(marketData.SAM)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600 text-sm">SOM:</span>
+                                        <span className="font-semibold">{formatCurrency(marketData.SOM)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="text-center text-sm text-gray-500 mt-8">
+                            <p>TechFlow Business Plan Dashboard | Erstellt: Oktober 2025</p>
+                            <p className="mt-1">Alle Beträge in EUR | Planungshorizont: 2025-2027</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<BusinessPlanDashboard />);
+    </script>
+</body>
+</html>
