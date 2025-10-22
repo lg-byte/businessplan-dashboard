@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFlow Business Plan Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-size: 1.5rem;
+            color: #4B5563;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        table th {
+            background: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .kpi-card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid;
+        }
+        
+        .kpi-card.green { border-left-color: #10b981; }
+        .kpi-card.blue { border-left-color: #3b82f6; }
+        .kpi-card.red { border-left-color: #ef4444; }
+        
+        .kpi-card h3 {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin: 0 0 8px 0;
+        }
+        
+        .kpi-card .value {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #111827;
+            margin: 0;
+        }
+        
+        .kpi-card .subtitle {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin: 8px 0 0 0;
+        }
+        
+        .positive { color: #10b981; }
+        .negative { color: #ef4444; }
+        
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 48px 32px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .section-header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0 0 16px 0;
+        }
+        
+        .section-header p {
+            font-size: 1.25rem;
+            margin: 0;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="loading">Dashboard wird geladen...</div>
+    </div>
+
+    <script>
+        console.log('Script started');
+        
+        // Business Plan Data
+        const rawData = {
+            revenue: [
+                { monat: '2025-01', jahr: 1, neukunden: 15, churnRate: 0.05, mrr: 7500, arr: 90000, umsatzEinmalig: 5000 },
+                { monat: '2025-02', jahr: 1, neukunden: 18, churnRate: 0.05, mrr: 9000, arr: 108000, umsatzEinmalig: 6000 },
+                { monat: '2025-03', jahr: 1, neukunden: 22, churnRate: 0.04, mrr: 11000, arr: 132000, umsatzEinmalig: 8000 },
+                { monat: '2025-04', jahr: 1, neukunden: 25, churnRate: 0.04, mrr: 12500, arr: 150000, umsatzEinmalig: 10000 },
+                { monat: '2025-05', jahr: 1, neukunden: 30, churnRate: 0.04, mrr: 15000, arr: 180000, umsatzEinmalig: 12000 },
+                { monat: '2025-06', jahr: 1, neukunden: 35, churnRate: 0.03, mrr: 17500, arr: 210000, umsatzEinmalig: 15000 },
+                { monat: '2025-07', jahr: 1, neukunden: 40, churnRate: 0.03, mrr: 20000, arr: 240000, umsatzEinmalig: 18000 },
+                { monat: '2025-08', jahr: 1, neukunden: 45, churnRate: 0.03, mrr: 22500, arr: 270000, umsatzEinmalig: 20000 },
+                { monat: '2025-09', jahr: 1, neukunden: 50, churnRate: 0.03, mrr: 25000, arr: 300000, umsatzEinmalig: 22000 },
+                { monat: '2025-10', jahr: 1, neukunden: 55, churnRate: 0.02, mrr: 27500, arr: 330000, umsatzEinmalig: 25000 },
+                { monat: '2025-11', jahr: 1, neukunden: 60, churnRate: 0.02, mrr: 30000, arr: 360000, umsatzEinmalig: 28000 },
+                { monat: '2025-12', jahr: 1, neukunden: 65, churnRate: 0.02, mrr: 32500, arr: 390000, umsatzEinmalig: 30000 },
+                { monat: '2026-01', jahr: 2, neukunden: 70, churnRate: 0.02, mrr: 35000, arr: 420000, umsatzEinmalig: 32000 },
+                { monat: '2026-02', jahr: 2, neukunden: 75, churnRate: 0.02, mrr: 37500, arr: 450000, umsatzEinmalig: 35000 },
+                { monat: '2026-03', jahr: 2, neukunden: 80, churnRate: 0.02, mrr: 40000, arr: 480000, umsatzEinmalig: 38000 },
+                { monat: '2026-04', jahr: 2, neukunden: 85, churnRate: 0.02, mrr: 42500, arr: 510000, umsatzEinmalig: 40000 },
+                { monat: '2026-05', jahr: 2, neukunden: 90, churnRate: 0.02, mrr: 45000, arr: 540000, umsatzEinmalig: 42000 },
+                { monat: '2026-06', jahr: 2, neukunden: 95, churnRate: 0.02, mrr: 47500, arr: 570000, umsatzEinmalig: 45000 },
+                { monat: '2026-07', jahr: 2, neukunden: 100, churnRate: 0.02, mrr: 50000, arr: 600000, umsatzEinmalig: 48000 },
+                { monat: '2026-08', jahr: 2, neukunden: 105, churnRate: 0.02, mrr: 52500, arr: 630000, umsatzEinmalig: 50000 },
+                { monat: '2026-09', jahr: 2, neukunden: 110, churnRate: 0.02, mrr: 55000, arr: 660000, umsatzEinmalig: 52000 },
+                { monat: '2026-10', jahr: 2, neukunden: 115, churnRate: 0.02, mrr: 57500, arr: 690000, umsatzEinmalig: 55000 },
+                { monat: '2026-11', jahr: 2, neukunden: 120, churnRate: 0.02, mrr: 60000, arr: 720000, umsatzEinmalig: 58000 },
+                { monat: '2026-12', jahr: 2, neukunden: 125, churnRate: 0.02, mrr: 62500, arr: 750000, umsatzEinmalig: 60000 },
+                { monat: '2027-01', jahr: 3, neukunden: 130, churnRate: 0.02, mrr: 65000, arr: 780000, umsatzEinmalig: 62000 },
+                { monat: '2027-02', jahr: 3, neukunden: 135, churnRate: 0.02, mrr: 67500, arr: 810000, umsatzEinmalig: 65000 },
+                { monat: '2027-03', jahr: 3, neukunden: 140, churnRate: 0.02, mrr: 70000, arr: 840000, umsatzEinmalig: 68000 },
+                { monat: '2027-04', jahr: 3, neukunden: 145, churnRate: 0.02, mrr: 72500, arr: 870000, umsatzEinmalig: 70000 },
+                { monat: '2027-05', jahr: 3, neukunden: 150, churnRate: 0.02, mrr: 75000, arr: 900000, umsatzEinmalig: 72000 },
+                { monat: '2027-06', jahr: 3, neukunden: 155, churnRate: 0.02, mrr: 77500, arr: 930000, umsatzEinmalig: 75000 },
+                { monat: '2027-07', jahr: 3, neukunden: 160, churnRate: 0.02, mrr: 80000, arr: 960000, umsatzEinmalig: 78000 },
+                { monat: '2027-08', jahr: 3, neukunden: 165, churnRate: 0.02, mrr: 82500, arr: 990000, umsatzEinmalig: 80000 },
+                { monat: '2027-09', jahr: 3, neukunden: 170, churnRate: 0.02, mrr: 85000, arr: 1020000, umsatzEinmalig: 82000 },
+                { monat: '2027-10', jahr: 3, neukunden: 175, churnRate: 0.02, mrr: 87500, arr: 1050000, umsatzEinmalig: 85000 },
+                { monat: '2027-11', jahr: 3, neukunden: 180, churnRate: 0.02, mrr: 90000, arr: 1080000, umsatzEinmalig: 88000 },
+                { monat: '2027-12', jahr: 3, neukunden: 185, churnRate: 0.02, mrr: 92500, arr: 1110000, umsatzEinmalig: 90000 }
+            ],
+            costs: [
+                { monat: '2025-01', jahr: 1, gehalter: 45000, marketing: 8000, serverCloud: 2000, buroMiete: 3000, softwareLizenzen: 1500, reisekosten: 1000, sonstigeKosten: 2000 },
+                { monat: '2025-02', jahr: 1, gehalter: 45000, marketing: 9000, serverCloud: 2200, buroMiete: 3000, softwareLizenzen: 1500, reisekosten: 1200, sonstigeKosten: 2200 },
+                { monat: '2025-03', jahr: 1, gehalter: 48000, marketing: 10000, serverCloud: 2400, buroMiete: 3000, softwareLizenzen: 1600, reisekosten: 1400, sonstigeKosten: 2400 },
+                { monat: '2025-04', jahr: 1, gehalter: 48000, marketing: 11000, serverCloud: 2600, buroMiete: 3000, softwareLizenzen: 1600, reisekosten: 1500, sonstigeKosten: 2600 },
+                { monat: '2025-05', jahr: 1, gehalter: 52000, marketing: 12000, serverCloud: 2800, buroMiete: 3500, softwareLizenzen: 1700, reisekosten: 1600, sonstigeKosten: 2800 },
+                { monat: '2025-06', jahr: 1, gehalter: 52000, marketing: 13000, serverCloud: 3000, buroMiete: 3500, softwareLizenzen: 1700, reisekosten: 1800, sonstigeKosten: 3000 },
+                { monat: '2025-07', jahr: 1, gehalter: 56000, marketing: 14000, serverCloud: 3200, buroMiete: 3500, softwareLizenzen: 1800, reisekosten: 2000, sonstigeKosten: 3200 },
+                { monat: '2025-08', jahr: 1, gehalter: 56000, marketing: 15000, serverCloud: 3400, buroMiete: 3500, softwareLizenzen: 1800, reisekosten: 2200, sonstigeKosten: 3400 },
+                { monat: '2025-09', jahr: 1, gehalter: 60000, marketing: 16000, serverCloud: 3600, buroMiete: 4000, softwareLizenzen: 1900, reisekosten: 2400, sonstigeKosten: 3600 },
+                { monat: '2025-10', jahr: 1, gehalter: 60000, marketing: 17000, serverCloud: 3800, buroMiete: 4000, softwareLizenzen: 1900, reisekosten: 2600, sonstigeKosten: 3800 },
+                { monat: '2025-11', jahr: 1, gehalter: 65000, marketing: 18000, serverCloud: 4000, buroMiete: 4000, softwareLizenzen: 2000, reisekosten: 2800, sonstigeKosten: 4000 },
+                { monat: '2025-12', jahr: 1, gehalter: 65000, marketing: 19000, serverCloud: 4200, buroMiete: 4000, softwareLizenzen: 2000, reisekosten: 3000, sonstigeKosten: 4200 },
+                { monat: '2026-01', jahr: 2, gehalter: 70000, marketing: 20000, serverCloud: 4400, buroMiete: 4500, softwareLizenzen: 2100, reisekosten: 3200, sonstigeKosten: 4400 },
+                { monat: '2026-02', jahr: 2, gehalter: 70000, marketing: 21000, serverCloud: 4600, buroMiete: 4500, softwareLizenzen: 2100, reisekosten: 3400, sonstigeKosten: 4600 },
+                { monat: '2026-03', jahr: 2, gehalter: 75000, marketing: 22000, serverCloud: 4800, buroMiete: 4500, softwareLizenzen: 2200, reisekosten: 3600, sonstigeKosten: 4800 },
+                { monat: '2026-04', jahr: 2, gehalter: 75000, marketing: 23000, serverCloud: 5000, buroMiete: 4500, softwareLizenzen: 2200, reisekosten: 3800, sonstigeKosten: 5000 },
+                { monat: '2026-05', jahr: 2, gehalter: 80000, marketing: 24000, serverCloud: 5200, buroMiete: 5000, softwareLizenzen: 2300, reisekosten: 4000, sonstigeKosten: 5200 },
+                { monat: '2026-06', jahr: 2, gehalter: 80000, marketing: 25000, serverCloud: 5400, buroMiete: 5000, softwareLizenzen: 2300, reisekosten: 4200, sonstigeKosten: 5400 },
+                { monat: '2026-07', jahr: 2, gehalter: 85000, marketing: 26000, serverCloud: 5600, buroMiete: 5000, softwareLizenzen: 2400, reisekosten: 4400, sonstigeKosten: 5600 },
+                { monat: '2026-08', jahr: 2, gehalter: 85000, marketing: 27000, serverCloud: 5800, buroMiete: 5000, softwareLizenzen: 2400, reisekosten: 4600, sonstigeKosten: 5800 },
+                { monat: '2026-09', jahr: 2, gehalter: 90000, marketing: 28000, serverCloud: 6000, buroMiete: 5500, softwareLizenzen: 2500, reisekosten: 4800, sonstigeKosten: 6000 },
+                { monat: '2026-10', jahr: 2, gehalter: 90000, marketing: 29000, serverCloud: 6200, buroMiete: 5500, softwareLizenzen: 2500, reisekosten: 5000, sonstigeKosten: 6200 },
+                { monat: '2026-11', jahr: 2, gehalter: 95000, marketing: 30000, serverCloud: 6400, buroMiete: 5500, softwareLizenzen: 2600, reisekosten: 5200, sonstigeKosten: 6400 },
+                { monat: '2026-12', jahr: 2, gehalter: 95000, marketing: 31000, serverCloud: 6600, buroMiete: 5500, softwareLizenzen: 2600, reisekosten: 5400, sonstigeKosten: 6600 },
+                { monat: '2027-01', jahr: 3, gehalter: 100000, marketing: 32000, serverCloud: 6800, buroMiete: 6000, softwareLizenzen: 2700, reisekosten: 5600, sonstigeKosten: 6800 },
+                { monat: '2027-02', jahr: 3, gehalter: 100000, marketing: 33000, serverCloud: 7000, buroMiete: 6000, softwareLizenzen: 2700, reisekosten: 5800, sonstigeKosten: 7000 },
+                { monat: '2027-03', jahr: 3, gehalter: 105000, marketing: 34000, serverCloud: 7200, buroMiete: 6000, softwareLizenzen: 2800, reisekosten: 6000, sonstigeKosten: 7200 },
+                { monat: '2027-04', jahr: 3, gehalter: 105000, marketing: 35000, serverCloud: 7400, buroMiete: 6000, softwareLizenzen: 2800, reisekosten: 6200, sonstigeKosten: 7400 },
+                { monat: '2027-05', jahr: 3, gehalter: 110000, marketing: 36000, serverCloud: 7600, buroMiete: 6500, softwareLizenzen: 2900, reisekosten: 6400, sonstigeKosten: 7600 },
+                { monat: '2027-06', jahr: 3, gehalter: 110000, marketing: 37000, serverCloud: 7800, buroMiete: 6500, softwareLizenzen: 2900, reisekosten: 6600, sonstigeKosten: 7800 },
+                { monat: '2027-07', jahr: 3, gehalter: 115000, marketing: 38000, serverCloud: 8000, buroMiete: 6500, softwareLizenzen: 3000, reisekosten: 6800, sonstigeKosten: 8000 },
+                { monat: '2027-08', jahr: 3, gehalter: 115000, marketing: 39000, serverCloud: 8200, buroMiete: 6500, softwareLizenzen: 3000, reisekosten: 7000, sonstigeKosten: 8200 },
+                { monat: '2027-09', jahr: 3, gehalter: 120000, marketing: 40000, serverCloud: 8400, buroMiete: 7000, softwareLizenzen: 3100, reisekosten: 7200, sonstigeKosten: 8400 },
+                { monat: '2027-10', jahr: 3, gehalter: 120000, marketing: 41000, serverCloud: 8600, buroMiete: 7000, softwareLizenzen: 3100, reisekosten: 7400, sonstigeKosten: 8600 },
+                { monat: '2027-11', jahr: 3, gehalter: 125000, marketing: 42000, serverCloud: 8800, buroMiete: 7000, softwareLizenzen: 3200, reisekosten: 7600, sonstigeKosten: 8800 },
+                { monat: '2027-12', jahr: 3, gehalter: 125000, marketing: 43000, serverCloud: 9000, buroMiete: 7000, softwareLizenzen: 3200, reisekosten: 7800, sonstigeKosten: 9000 }
+            ],
+            funding: [
+                { quelle: 'Eigenkapital', betrag: 50000, zeitpunkt: '2025-01', typ: 'Equity' },
+                { quelle: 'Business Angel', betrag: 150000, zeitpunkt: '2025-03', typ: 'Equity' },
+                { quelle: 'Seed Runde', betrag: 500000, zeitpunkt: '2025-09', typ: 'Equity' },
+                { quelle: 'Bank Kredit', betrag: 100000, zeitpunkt: '2026-06', typ: 'Debt' },
+                { quelle: 'Series A', betrag: 1000000, zeitpunkt: '2027-03', typ: 'Equity' }
+            ],
+            market: {
+                TAM: 5000000000,
+                SAM: 500000000,
+                SOM: 50000000,
+                CAC: 450,
+                LTV: 2700,
+                LTV_CAC_Ratio: 6.0
+            }
+        };
+
+        // Calculate financial metrics
+        function calculateMetrics() {
+            console.log('Calculating metrics');
+            let cumulativeCash = 0;
+            let cumulativeRevenue = 0;
+            let cumulativeCosts = 0;
+            let breakEvenMonth = null;
+            
+            const monthlyData = rawData.revenue.map((rev, idx) => {
+                const cost = rawData.costs[idx];
+                const revenue = rev.mrr + rev.umsatzEinmalig;
+                const costs = cost.gehalter + cost.marketing + cost.serverCloud + cost.buroMiete + 
+                             cost.softwareLizenzen + cost.reisekosten + cost.sonstigeKosten;
+                const netIncome = revenue - costs;
+                
+                const funding = rawData.funding.find(f => f.zeitpunkt === rev.monat);
+                const fundingAmount = funding ? funding.betrag : 0;
+                
+                const netCashFlow = netIncome + fundingAmount;
+                cumulativeCash += netCashFlow;
+                cumulativeRevenue += revenue;
+                cumulativeCosts += costs;
+                
+                if (!breakEvenMonth && cumulativeCash > 0) {
+                    breakEvenMonth = rev.monat;
+                }
+                
+                return {
+                    monat: rev.monat,
+                    jahr: rev.jahr,
+                    revenue,
+                    costs,
+                    netIncome,
+                    netCashFlow,
+                    cumulativeCash,
+                    mrr: rev.mrr,
+                    arr: rev.arr,
+                    neukunden: rev.neukunden
+                };
+            });
+            
+            const yearlyData = [1, 2, 3].map(year => {
+                const yearData = monthlyData.filter(m => m.jahr === year);
+                const totalRevenue = yearData.reduce((sum, m) => sum + m.revenue, 0);
+                const totalCosts = yearData.reduce((sum, m) => sum + m.costs, 0);
+                return {
+                    jahr: year,
+                    revenue: totalRevenue,
+                    costs: totalCosts,
+                    netIncome: totalRevenue - totalCosts
+                };
+            });
+            
+            const finalMonth = monthlyData[monthlyData.length - 1];
+            const cagr = Math.pow(yearlyData[2].revenue / yearlyData[0].revenue, 1/2) - 1;
+            const totalFunding = rawData.funding.reduce((sum, f) => sum + f.betrag, 0);
+            
+            return {
+                monthlyData,
+                yearlyData,
+                breakEvenMonth,
+                finalCash: finalMonth.cumulativeCash,
+                cagr: (cagr * 100).toFixed(2),
+                totalRevenue: cumulativeRevenue,
+                totalFunding,
+                ltv: rawData.market.LTV,
+                cac: rawData.market.CAC,
+                ltvCacRatio: rawData.market.LTV_CAC_Ratio
+            };
+        }
+
+        // Format currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('de-DE', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        // Render dashboard
+        function renderDashboard() {
+            console.log('Rendering dashboard');
+            const metrics = calculateMetrics();
+            
+            const html = `
+                <div class="min-h-screen bg-gray-50 p-4 md:p-8">
+                    <div class="max-w-7xl mx-auto">
+                        <div class="section-header">
+                            <h1>TechFlow Business Plan Dashboard</h1>
+                            <p>3-Jahres-Finanzplanung 2025-2027</p>
+                        </div>
+
+                        <!-- KPI Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                            <div class="kpi-card green">
+                                <h3>Gesamtumsatz (3 Jahre)</h3>
+                                <p class="value">${formatCurrency(metrics.totalRevenue)}</p>
+                                <p class="subtitle">CAGR: ${metrics.cagr}%</p>
+                            </div>
+                            
+                            <div class="kpi-card green">
+                                <h3>Break-Even Monat</h3>
+                                <p class="value">${metrics.breakEvenMonth || 'Nicht erreicht'}</p>
+                                <p class="subtitle">Profitabilität erreicht</p>
+                            </div>
+                            
+                            <div class="kpi-card blue">
+                                <h3>Finale Cash Position</h3>
+                                <p class="value">${formatCurrency(metrics.finalCash)}</p>
+                                <p class="subtitle">Ende Jahr 3</p>
+                            </div>
+                            
+                            <div class="kpi-card green">
+                                <h3>LTV:CAC Ratio</h3>
+                                <p class="value">${metrics.ltvCacRatio.toFixed(1)}:1</p>
+                                <p class="subtitle">Sehr gesund (>3:1)</p>
+                            </div>
+                        </div>
+
+                        <!-- Revenue Table -->
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                            <h2 class="text-2xl font-bold mb-4">Jahresübersicht</h2>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Jahr</th>
+                                        <th class="text-right">Umsatz</th>
+                                        <th class="text-right">Kosten</th>
+                                        <th class="text-right">Nettoeinkommen</th>
+                                        <th class="text-right">Marge</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${metrics.yearlyData.map(year => `
+                                        <tr>
+                                            <td><strong>Jahr ${year.jahr}</strong></td>
+                                            <td class="text-right">${formatCurrency(year.revenue)}</td>
+                                            <td class="text-right">${formatCurrency(year.costs)}</td>
+                                            <td class="text-right ${year.netIncome >= 0 ? 'positive' : 'negative'}">
+                                                <strong>${formatCurrency(year.netIncome)}</strong>
+                                            </td>
+                                            <td class="text-right">${((year.netIncome / year.revenue) * 100).toFixed(1)}%</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Monthly Data Table -->
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                            <h2 class="text-2xl font-bold mb-4">Monatliche Entwicklung (Auszug)</h2>
+                            <div style="overflow-x: auto;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Monat</th>
+                                            <th class="text-right">MRR</th>
+                                            <th class="text-right">Umsatz</th>
+                                            <th class="text-right">Kosten</th>
+                                            <th class="text-right">Cash Flow</th>
+                                            <th class="text-right">Kumulativ Cash</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${metrics.monthlyData.filter((_, i) => i % 3 === 0).map(month => `
+                                            <tr>
+                                                <td>${month.monat}</td>
+                                                <td class="text-right">${formatCurrency(month.mrr)}</td>
+                                                <td class="text-right">${formatCurrency(month.revenue)}</td>
+                                                <td class="text-right">${formatCurrency(month.costs)}</td>
+                                                <td class="text-right ${month.netCashFlow >= 0 ? 'positive' : 'negative'}">
+                                                    ${formatCurrency(month.netCashFlow)}
+                                                </td>
+                                                <td class="text-right ${month.cumulativeCash >= 0 ? 'positive' : 'negative'}">
+                                                    <strong>${formatCurrency(month.cumulativeCash)}</strong>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Funding Overview -->
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                            <h2 class="text-2xl font-bold mb-4">Finanzierungsrunden</h2>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Quelle</th>
+                                        <th>Zeitpunkt</th>
+                                        <th>Typ</th>
+                                        <th class="text-right">Betrag</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rawData.funding.map(fund => `
+                                        <tr>
+                                            <td><strong>${fund.quelle}</strong></td>
+                                            <td>${fund.zeitpunkt}</td>
+                                            <td><span style="padding: 4px 8px; background: ${fund.typ === 'Equity' ? '#dbeafe' : '#fed7aa'}; border-radius: 4px; font-size: 0.75rem;">${fund.typ}</span></td>
+                                            <td class="text-right"><strong>${formatCurrency(fund.betrag)}</strong></td>
+                                        </tr>
+                                    `).join('')}
+                                    <tr style="border-top: 2px solid #e5e7eb; font-weight: bold;">
+                                        <td colspan="3">Gesamtfinanzierung</td>
+                                        <td class="text-right" style="color: #2563eb;">${formatCurrency(metrics.totalFunding)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Market Data -->
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                            <h2 class="text-2xl font-bold mb-4">Marktpotenzial & Unit Economics</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h3 class="font-semibold text-lg mb-3">Markt</h3>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">TAM (Total Addressable Market):</span>
+                                            <strong>${formatCurrency(rawData.market.TAM)}</strong>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">SAM (Serviceable Available Market):</span>
+                                            <strong>${formatCurrency(rawData.market.SAM)}</strong>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">SOM (Serviceable Obtainable Market):</span>
+                                            <strong>${formatCurrency(rawData.market.SOM)}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-lg mb-3">Unit Economics</h3>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">CAC (Customer Acquisition Cost):</span>
+                                            <strong>${formatCurrency(rawData.market.CAC)}</strong>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">LTV (Lifetime Value):</span>
+                                            <strong>${formatCurrency(rawData.market.LTV)}</strong>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">LTV:CAC Ratio:</span>
+                                            <strong class="positive">${rawData.market.LTV_CAC_Ratio.toFixed(1)}:1</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="text-center text-sm text-gray-500 mt-8 pb-8">
+                            <p><strong>TechFlow Business Plan Dashboard</strong> | Erstellt: Oktober 2025</p>
+                            <p class="mt-1">Alle Beträge in EUR | Planungshorizont: 2025-2027</p>
+                            <p class="mt-2 text-xs">Break-Even: ${metrics.breakEvenMonth} | CAGR: ${metrics.cagr}% | Finale Cash: ${formatCurrency(metrics.finalCash)}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('root').innerHTML = html;
+            console.log('Dashboard rendered successfully');
+        }
+
+        // Initialize
+        try {
+            console.log('Initializing dashboard');
+            renderDashboard();
+        } catch (error) {
+            console.error('Error rendering dashboard:', error);
+            document.getElementById('root').innerHTML = `
+                <div class="loading">
+                    <div style="text-align: center;">
+                        <h2 style="color: #ef4444; margin-bottom: 16px;">❌ Fehler beim Laden</h2>
+                        <p>Bitte öffnen Sie die Browser-Konsole (F12) für Details.</p>
+                        <p style="margin-top: 16px; font-size: 0.875rem; color: #6b7280;">Error: ${error.message}</p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
